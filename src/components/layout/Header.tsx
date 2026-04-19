@@ -6,8 +6,10 @@ import Image from "next/image";
 import { Heart, ShoppingCart, User, Menu, X } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { useCartStore } from "@/store/useCartStore";
+import { useWishlistStore } from "@/store/useWishlistStore";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { NAV_LINKS } from "@/lib/constants";
+import { usePathname } from "next/navigation";
 
 export function Header() {
   const [mounted, setMounted] = useState(false);
@@ -15,6 +17,8 @@ export function Header() {
   const items = useCartStore((state) => state.items);
   const setIsOpen = useCartStore((state) => state.setIsOpen);
   const { user } = useAuth();
+  const wishlistCount = useWishlistStore((state) => state.items.length);
+  const pathname = usePathname();
   
   // Prevent hydration mismatch
   useEffect(() => {
@@ -32,6 +36,8 @@ export function Header() {
   }, [isMobileMenuOpen]);
 
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>
@@ -67,6 +73,11 @@ export function Header() {
             <div className="flex items-center gap-4 md:gap-6">
               <Link href="/wishlist" className="hidden sm:block text-text hover:text-accent transition-colors relative">
                 <Heart className="h-5 w-5" />
+                {mounted && wishlistCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center font-numbers">
+                    {wishlistCount}
+                  </span>
+                )}
                 <span className="sr-only">المفضلة</span>
               </Link>
               <button 

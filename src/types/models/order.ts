@@ -6,6 +6,7 @@ export interface CheckoutItem {
   name: string;
   quantity: number;
   price: number;
+  costPrice?: number; // Snapshot of the item's cost at checkout
   selectedSize: string;
   selectedColor: string;
 }
@@ -24,6 +25,8 @@ export interface ShippingInfo {
 export interface OrderTotals {
   subtotal: number;
   shipping: number;
+  totalCost?: number; // Cost of all items
+  netProfit?: number; // Profit (subtotal - totalCost)
   finalTotal: number;
 }
 

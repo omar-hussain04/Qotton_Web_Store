@@ -10,5 +10,6 @@ export interface UserProfile {
   email?: string;
   wishlist?: string[];
   cart?: CartItem[];
+  role?: 'admin' | 'user';
   updatedAt?: Timestamp;
 }

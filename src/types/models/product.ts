@@ -9,6 +9,7 @@ export interface Product {
   name: string;
   slug: string;
   price: number;
+  costPrice?: number; // Added for profit tracking
   originalPrice?: number;
   discount?: number;
   images: string[];

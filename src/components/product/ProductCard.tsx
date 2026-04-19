@@ -41,6 +41,16 @@ export function ProductCard({ product }: ProductCardProps) {
         
         {/* Badges */}
         <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">
+          {(() => {
+            const totalStock = product.colors?.reduce((sum, c) => sum + (c.stock || 0), 0) || 0;
+            if (totalStock === 0) {
+              return <Badge className="bg-red-500 hover:bg-red-600 font-bold border-none text-white shadow-md">انتهت الكمية</Badge>;
+            }
+            if (totalStock <= 5) {
+              return <Badge className="bg-orange-500 hover:bg-orange-600 font-bold border-none text-white shadow-md">اقتربت على النفاذ</Badge>;
+            }
+            return null;
+          })()}
           {product.isNew && <Badge>جديد</Badge>}
           {product.discount && <Badge variant="destructive">خصم %{product.discount}</Badge>}
         </div>

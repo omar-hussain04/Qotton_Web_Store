@@ -52,8 +52,10 @@ export default function CheckoutPage() {
   }, [user, profileLoaded]);
 
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const totalCost = items.reduce((sum, item) => sum + (item.product.costPrice || 0) * item.quantity, 0);
   const shipping = total >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const finalTotal = total + shipping;
+  const netProfit = total - totalCost;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,13 +80,16 @@ export default function CheckoutPage() {
           name: item.product.name,
           quantity: item.quantity,
           price: item.product.price,
+          costPrice: item.product.costPrice || 0,
           selectedSize: item.selectedSize,
           selectedColor: item.selectedColor
         })),
         totals: {
           subtotal: total,
           shipping: shipping,
-          finalTotal: finalTotal
+          finalTotal: finalTotal,
+          totalCost: totalCost,
+          netProfit: netProfit
         }
       };
 

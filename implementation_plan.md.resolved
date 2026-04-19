@@ -1,0 +1,66 @@
+# Satr Shop Project Documentation Plan
+
+This plan outlines the creation of a detailed "Project Blueprint & Developer Guide" for Satr Shop. The goal is to provide a complete technical reference that allows the project to be easily replicated, customized, and maintained for new clients.
+
+## Proposed Structure
+
+The documentation will be created as a new artifact `project_blueprint.md` and will include the following sections:
+
+### 1. Executive Summary
+- Project name and purpose.
+- Core business logic (E-commerce for the Jordanian market).
+
+### 2. Technology Stack
+- **Framework**: Next.js 15 (App Router).
+- **Styling**: Tailwind CSS v4 & Framer Motion.
+- **Backend / Database**: Firebase (Firestore, Auth).
+- **State Management**: Zustand (Cart & Wishlist stores).
+- **Icons**: Lucide React.
+- **Theming**: Next Themes.
+
+### 3. Database Architecture (Firestore)
+- Detailed schema for `products`, `orders`, and `messages` collections.
+- Explanation of key fields (e.g., `costPrice` for profit tracking, `stock` management).
+
+### 4. Key Features & Modules
+- **Public Shop**: Home, Shop, Product detail pages, Dynamic collections.
+- **Customer Experience**: Cart management, Wishlist, Smart search, Checkout flow with university-specific options.
+- **Detailed Admin Dashboard**:
+  - **Overview (Real-time Analytics)**:
+    - Sales & Profit tracking (Financial performance).
+    - Status monitoring (Pending orders, Unread messages).
+    - Supply chain alerts (Out-of-stock and Low-stock products).
+  - **Order Management System**:
+    - Comprehensive filtering & search (by name, phone, or ID).
+    - Multichannel communication (Immediate WhatsApp integration for customers).
+    - Status lifecycle management (Pending -> Confirmed -> Shipping -> Completed/Cancelled).
+    - CSV Export for logistics and archives.
+    - Expandable order details (itemized invoice + detailed customer info).
+  - **Professional Inventory Control**:
+    - Centralized stock management with quick update tools.
+    - Low-stock visual indicators and alerts.
+    - Cost price vs. Retail price visibility for margin analysis.
+  - **Product Catalog Management**:
+    - Full CRUD operations with rich image support.
+    - Categorization and rating management.
+  - **Customer Inquiry Center**:
+    - Integrated messaging system for support and sales.
+- **SEO & Performance**: Dynamic JSON-LD structured data, Automated sitemaps, Optimized robots.txt.
+
+### 5. Project Directory Structure
+- Breakdown of `src/app`, `src/components`, `src/lib`, `src/store`, and `src/types`.
+
+### 6. Setup & Deployment Guide
+- Required environment variables (`.env.local`).
+- Firebase project setup instructions.
+- Deployment steps (Vercel recommended).
+
+### 7. Rebranding & Customization Guide
+- Customizing global styles (`globals.css`).
+- Updating brand assets (Logos, Icons, Names).
+- Adjusting business rules (Shipping fees, Cities).
+
+## Verification Plan
+- Cross-reference all file paths with the actual codebase.
+- Ensure all technical details (versions, API usages) are accurate.
+- Verify that the rebranding guide is actionable and clear.
