@@ -116,6 +116,7 @@ export const metadata: Metadata = {
   verification: {
     google: "85b06d8f45cf50cb",
   },
+  manifest: "/manifest.json",
 };
 
 // JSON-LD Structured Data

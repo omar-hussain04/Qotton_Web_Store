@@ -1,0 +1,17 @@
+{
+  "name": "قطن | Qotton",
+  "short_name": "قطن",
+  "description": "متجر هوديات وملابس أردنية مصنوعة بعناية",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#E5E5E5",
+  "icons": [
+    {
+      "src": "/qotton_logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
