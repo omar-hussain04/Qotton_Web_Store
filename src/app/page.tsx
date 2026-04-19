@@ -26,8 +26,10 @@ export default async function Home() {
         </div>
 
         <Container className="relative z-10 text-center pt-[55vh] md:pt-[65vh] pb-16 flex flex-col items-center">
-          <p className="text-xl md:text-2xl text-text max-w-2xl mx-auto opacity-90 mb-4 leading-relaxed">
-            هوديات بملمس الفخامة وتفاصيل الأصالة
+          <h1 className="sr-only">قطن Qotton - متجر هوديات وملابس أردنية أصلية</h1>
+          <h2 className="text-2xl md:text-3xl font-heading text-accent mb-2 drop-shadow-sm">خيطٌ يَنسجُ لأثرٍ يَبقى</h2>
+          <p className="text-xl md:text-2xl text-text max-w-2xl mx-auto opacity-90 mb-8 leading-relaxed font-light">
+            هوديات بملمس الفخامة وتفاصيل الأصالة الأردنية
           </p>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-6 max-w-sm sm:max-w-none">
             <Link href="/products" className="w-full sm:w-auto">
