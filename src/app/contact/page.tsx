@@ -20,7 +20,7 @@ export default function ContactPage() {
     const data = {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
-      subject: formData.get("subject") as string,
+      phone: formData.get("phone") as string,
       message: formData.get("message") as string,
     };
 
@@ -68,8 +68,8 @@ export default function ContactPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <label htmlFor="subject" className="text-sm font-medium text-text">الموضوع</label>
-            <input type="text" name="subject" id="subject" required className="w-full bg-background border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-accent transition-colors" placeholder="عنوان الرسالة" />
+            <label htmlFor="phone" className="text-sm font-medium text-text">رقم الهاتف</label>
+            <input type="tel" name="phone" id="phone" required className="w-full bg-background border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-accent transition-colors text-left" placeholder="0790000000" dir="ltr" />
           </div>
           <div className="space-y-2">
             <label htmlFor="message" className="text-sm font-medium text-text">الرسالة</label>

@@ -2,9 +2,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // ✅ Admin verification — only your real email has full access
+    // ✅ Admin verification — hardcoded owner email OR user document has role "admin"
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == "oh9500585@gmail.com";
+      return request.auth != null && (
+        request.auth.token.email == "oh9500585@gmail.com" ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+      );
     }
 
     // ✅ Products: Everyone can browse, only admin can modify
@@ -26,10 +29,15 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
     
-    // ✅ Users: Owner can read/write their own profile, admin can read all profiles
+    // ✅ Users: Owner can read/write their own profile, admin can read all profiles and write to change roles
     match /users/{userId} {
       allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    // ✅ Activity Logs: Only admins can read and write
+    match /activity_logs/{logId} {
+      allow read, write: if isAdmin();
     }
   }
 }

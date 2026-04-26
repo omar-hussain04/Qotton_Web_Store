@@ -6,6 +6,7 @@ import type { Order, OrderStatus } from "@/types";
 import { Search, MapPin, Phone, ChevronDown, ChevronUp, Package, User, MessageSquare, Printer, PrinterIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { motion, AnimatePresence } from "framer-motion";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 // Status configuration map for easy styling and translation
 const STATUS_MAP: Record<OrderStatus, { label: string, color: string, bg: string, border: string }> = {
@@ -73,6 +74,46 @@ export default function AdminOrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [deleteModalState, setDeleteModalState] = useState<{isOpen: boolean, orderId: string | null}>({ isOpen: false, orderId: null });
+
+  const [printOrderId, setPrintOrderId] = useState<string | null>(null);
+
+  const confirmDelete = async () => {
+    const { orderId } = deleteModalState;
+    if (!orderId) return;
+
+    try {
+      const { deleteOrder } = await import("@/lib/orders");
+      const { logActivity } = await import("@/lib/logger");
+      const { auth } = await import("@/lib/firebase");
+      await deleteOrder(orderId);
+      
+      if (auth.currentUser) {
+        await logActivity(
+          auth.currentUser.uid,
+          auth.currentUser.displayName || "مدير",
+          auth.currentUser.email || "",
+          "DELETE",
+          `تم حذف الطلب رقم ${orderId}`
+        );
+      }
+      
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+    } catch (error) {
+      console.error(error);
+      alert("حدث خطأ أثناء حذف الطلب");
+    } finally {
+      setDeleteModalState({ isOpen: false, orderId: null });
+    }
+  };
+
+  const handlePrint = (orderId: string) => {
+    setPrintOrderId(orderId);
+    setTimeout(() => {
+      window.print();
+      setPrintOrderId(null);
+    }, 200);
+  };
 
   const loadOrders = async () => {
     setLoading(true);
@@ -306,24 +347,35 @@ export default function AdminOrdersPage() {
                                     )}
                                   </div>
 
-                                  <div className="mt-6 flex flex-col gap-2">
-                                    <a 
-                                      href={`https://wa.me/${order.customer?.phone?.replace(/^0/, "962")}`}
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-green-500 hover:bg-green-600 text-white transition-colors rounded-lg font-bold text-sm"
-                                    >
-                                      <MessageSquare className="w-4 h-4" />
-                                      مراسلة العميل (واتساب)
-                                    </a>
-                                    <button 
-                                      onClick={() => window.print()}
-                                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-background border border-border hover:bg-surface text-text transition-colors rounded-lg font-bold text-sm"
-                                    >
-                                      <PrinterIcon className="w-4 h-4" />
-                                      طباعة إيصال الطلب
-                                    </button>
-                                  </div>
+                                    <div className="mt-6 flex flex-col gap-2">
+                                      <a 
+                                        href={`https://wa.me/${order.customer?.phone?.replace(/^0/, "962")}`}
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-green-500 hover:bg-green-600 text-white transition-colors rounded-lg font-bold text-sm"
+                                      >
+                                        <MessageSquare className="w-4 h-4" />
+                                        مراسلة العميل (واتساب)
+                                      </a>
+                                      <button 
+                                        onClick={() => handlePrint(order.id)}
+                                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-background border border-border hover:bg-surface text-text transition-colors rounded-lg font-bold text-sm"
+                                      >
+                                        <PrinterIcon className="w-4 h-4" />
+                                        طباعة إيصال الطلب
+                                      </button>
+                                      {order.status === 'cancelled' && (
+                                        <button 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDeleteModalState({ isOpen: true, orderId: order.id });
+                                          }}
+                                          className="flex items-center justify-center gap-2 w-full py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-colors rounded-lg font-bold text-sm mt-2"
+                                        >
+                                          حذف الطلب نهائياً
+                                        </button>
+                                      )}
+                                    </div>
                                 </div>
                               </div>
 
@@ -350,6 +402,111 @@ export default function AdminOrdersPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModalState.isOpen}
+        title="حذف الطلب نهائياً"
+        message={`هل أنت متأكد من حذف الطلب رقم ${deleteModalState.orderId} بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء.`}
+        confirmText="حذف نهائياً"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteModalState({ isOpen: false, orderId: null })}
+      />
+
+      {/* Printable Invoice Container */}
+      {printOrderId && (() => {
+        const orderToPrint = orders.find(o => o.id === printOrderId);
+        if (!orderToPrint) return null;
+
+        return (
+          <div id="printable-invoice" dir="rtl" className="hidden print:block p-8 bg-white text-black font-sans w-full min-h-screen">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b-2 border-black pb-6 mb-6">
+              <div>
+                <h1 className="text-4xl font-bold mb-2">قطن Qotton</h1>
+                <p className="text-gray-600 text-sm">متجر ملابس أردنية أصيلة</p>
+                <p className="text-gray-600 text-sm">هاتف: +962 7000 0000</p>
+              </div>
+              <div className="text-left">
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">إيصال طلب</h2>
+                <p className="font-bold text-lg mb-1">رقم الطلب: <span dir="ltr">#{orderToPrint.id.substring(0, 8).toUpperCase()}</span></p>
+                <p className="text-gray-600">التاريخ: {orderToPrint.createdAt ? new Date(orderToPrint.createdAt.toMillis()).toLocaleDateString('ar-JO') : "-"}</p>
+                <p className="text-gray-600 mt-1 font-bold">الحالة: {STATUS_MAP[orderToPrint.status].label}</p>
+              </div>
+            </div>
+
+            {/* Customer Details */}
+            <div className="mb-8 bg-gray-50 p-4 border border-gray-200 rounded">
+              <h3 className="text-lg font-bold border-b border-gray-300 pb-2 mb-3">بيانات العميل</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="mb-1"><span className="font-bold">الاسم:</span> {orderToPrint.customer?.firstName} {orderToPrint.customer?.lastName}</p>
+                  <p className="mb-1"><span className="font-bold">الهاتف:</span> <span dir="ltr">{orderToPrint.customer?.phone}</span></p>
+                </div>
+                <div>
+                  <p className="mb-1"><span className="font-bold">المدينة:</span> {orderToPrint.customer?.city === 'Amman' ? 'عمان' : orderToPrint.customer?.city}</p>
+                  <p className="mb-1"><span className="font-bold">العنوان:</span> {orderToPrint.customer?.address}</p>
+                </div>
+              </div>
+              {orderToPrint.customer?.notes && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <p><span className="font-bold">ملاحظات التوصيل:</span> {orderToPrint.customer.notes}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Items Table */}
+            <h3 className="text-lg font-bold mb-3">محتويات الطلب</h3>
+            <table className="w-full text-sm border-collapse mb-8">
+              <thead>
+                <tr className="bg-gray-100 border-b-2 border-black">
+                  <th className="py-3 px-4 text-right font-bold w-1/2">المنتج</th>
+                  <th className="py-3 px-4 text-center font-bold">الكمية</th>
+                  <th className="py-3 px-4 text-center font-bold">السعر</th>
+                  <th className="py-3 px-4 text-left font-bold">الإجمالي</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orderToPrint.items?.map((item, idx) => (
+                  <tr key={idx} className="border-b border-gray-200">
+                    <td className="py-3 px-4">
+                      <div className="font-bold">{item.name}</div>
+                      <div className="text-gray-600 text-xs mt-1">اللون: {item.selectedColor} | المقاس: {item.selectedSize}</div>
+                    </td>
+                    <td className="py-3 px-4 text-center font-bold">{item.quantity}</td>
+                    <td className="py-3 px-4 text-center">{item.price.toFixed(2)} د.أ</td>
+                    <td className="py-3 px-4 text-left font-bold">{(item.quantity * item.price).toFixed(2)} د.أ</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Totals */}
+            <div className="flex justify-end mb-12">
+              <div className="w-1/3 bg-gray-50 p-4 border border-gray-200 rounded">
+                <div className="flex justify-between mb-2 pb-2 border-b border-gray-200 text-sm">
+                  <span className="text-gray-600">المجموع الفرعي:</span>
+                  <span className="font-bold">{orderToPrint.totals?.subtotal?.toFixed(2)} د.أ</span>
+                </div>
+                <div className="flex justify-between mb-2 pb-2 border-b border-gray-200 text-sm">
+                  <span className="text-gray-600">رسوم التوصيل:</span>
+                  <span className="font-bold">{orderToPrint.totals?.shipping?.toFixed(2)} د.أ</span>
+                </div>
+                <div className="flex justify-between mt-2 pt-2 text-lg">
+                  <span className="font-bold">المجموع الكلي:</span>
+                  <span className="font-bold text-black">{orderToPrint.totals?.finalTotal?.toFixed(2)} د.أ</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="text-center pt-8 border-t-2 border-gray-300 text-gray-500 text-sm">
+              <p className="font-bold mb-1 text-black">شكراً لتسوقكم من قطن!</p>
+              <p>خيطٌ يَنسجُ لأثرٍ يَبقى</p>
+              <p className="mt-2 text-xs">تم إنشاء هذا الإيصال إلكترونياً ولا يحتاج إلى ختم أو توقيع.</p>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

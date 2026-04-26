@@ -6,11 +6,27 @@ import type { Product } from "@/types";
 import { Plus, Edit, Trash2, Search, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteModalState, setDeleteModalState] = useState<{isOpen: boolean, id: string | null, name: string | null}>({ isOpen: false, id: null, name: null });
+
+  const confirmDelete = async () => {
+    const { id, name } = deleteModalState;
+    if (!id) return;
+    try {
+      await deleteProduct(id);
+      setProducts(products.filter(p => p.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("حدث خطأ أثناء الحذف");
+    } finally {
+      setDeleteModalState({ isOpen: false, id: null, name: null });
+    }
+  };
 
   const loadProducts = async () => {
     setLoading(true);
@@ -27,18 +43,6 @@ export default function AdminProductsPage() {
   useEffect(() => {
     loadProducts();
   }, []);
-
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`هل أنت متأكد من حذف المنتج "${name}"؟ لا يمكن التراجع عن هذا الإجراء.`)) {
-      try {
-        await deleteProduct(id);
-        setProducts(products.filter(p => p.id !== id));
-      } catch (err) {
-        console.error(err);
-        alert("حدث خطأ أثناء الحذف");
-      }
-    }
-  };
 
   const filteredProducts = products.filter(product => {
     if (!searchTerm) return true;
@@ -117,10 +121,11 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="bg-background px-2 py-1 rounded text-xs border border-border text-muted">
-                        {product.category === 'men' ? 'رجالي' : 
-                         product.category === 'women' ? 'نسائي' : 
-                         product.category === 'kids' ? 'أطفال' : 
-                         product.category === 'unisex' ? 'للجنسين' : product.category}
+                        {product.category === 'tshirt' ? 'تيشرت' : 
+                         product.category === 'hoodie' ? 'هودي' : 
+                         product.category === 'cap' ? 'كاب' : 
+                         product.category === 'totebag' ? 'توت باج' : 
+                         product.category === 'wallet' ? 'محفظة صغيرة' : product.category}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-muted text-xs">
@@ -130,13 +135,13 @@ export default function AdminProductsPage() {
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <Link href={`/admin/products/${product.id}`}>
-                          <button className="p-2 text-muted hover:text-accent hover:bg-accent/10 rounded transition-colors" title="تعديل">
+                          <button className="p-2 bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 hover:border-accent/40 rounded-lg transition-all" title="تعديل">
                             <Edit className="w-4 h-4" />
                           </button>
                         </Link>
                         <button 
-                          onClick={() => product.id && handleDelete(product.id, product.name)}
-                          className="p-2 text-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" 
+                          onClick={() => product.id && setDeleteModalState({ isOpen: true, id: product.id, name: product.name })}
+                          className="p-2 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40 rounded-lg transition-all" 
                           title="حذف"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -157,6 +162,15 @@ export default function AdminProductsPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModalState.isOpen}
+        title="حذف المنتج"
+        message={`هل أنت متأكد من حذف المنتج "${deleteModalState.name}" بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء وسيتم إزالته من المتجر.`}
+        confirmText="حذف المنتج"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteModalState({ isOpen: false, id: null, name: null })}
+      />
     </div>
   );
 }

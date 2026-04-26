@@ -59,7 +59,7 @@ export function Header() {
             </div>
 
             <nav className="hidden md:flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-10">
-              {NAV_LINKS.filter(link => ["/", "/products", "/about", "/contact"].includes(link.href)).map((link) => (
+              {NAV_LINKS.filter(link => ["/", "/products", "/about", "/faq", "/contact"].includes(link.href)).map((link) => (
                 <Link 
                   key={link.href} 
                   href={link.href} 

@@ -44,21 +44,25 @@ export default function ProductsPage() {
           className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "all" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
         >الكل</button>
         <button 
-          onClick={() => setActiveFilter("men")}
-          className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "men" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
-        >رجالي</button>
+          onClick={() => setActiveFilter("tshirt")}
+          className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "tshirt" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
+        >تيشرت</button>
         <button 
-          onClick={() => setActiveFilter("women")}
-          className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "women" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
-        >نسائي</button>
+          onClick={() => setActiveFilter("hoodie")}
+          className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "hoodie" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
+        >هودي</button>
         <button 
-          onClick={() => setActiveFilter("kids")}
-          className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "kids" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
-        >أطفال</button>
+          onClick={() => setActiveFilter("cap")}
+          className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "cap" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
+        >كاب</button>
         <button 
-          onClick={() => setActiveFilter("unisex")}
-          className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "unisex" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
-        >للجنسين</button>
+          onClick={() => setActiveFilter("totebag")}
+          className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "totebag" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
+        >توت باج</button>
+        <button 
+          onClick={() => setActiveFilter("wallet")}
+          className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${activeFilter === "wallet" ? "border-accent bg-accent text-primary" : "border-border text-muted hover:text-text hover:border-accent/50"}`}
+        >محفظة صغيرة</button>
       </div>
 
       {loading ? (

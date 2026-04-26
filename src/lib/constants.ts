@@ -8,10 +8,10 @@ export const NAV_LINKS = [
   { href: "/", label: "الرئيسية" },
   { href: "/products", label: "المنتجات" },
   { href: "/about", label: "عن قطن" },
+  { href: "/faq", label: "الأسئلة الشائعة" },
   { href: "/contact", label: "تواصل معنا" },
   { href: "/wishlist", label: "المفضلة" },
   { href: "/account", label: "حسابي" },
-  { href: "/faq", label: "الأسئلة الشائعة" },
 ];
 
 export const CONTACT_INFO = {

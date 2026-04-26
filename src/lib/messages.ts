@@ -51,3 +51,15 @@ export async function markMessageAsRead(messageId: string): Promise<void> {
     console.error("Error marking message as read:", error);
   }
 }
+
+/** Delete a message (Admin only) */
+export async function deleteMessage(messageId: string): Promise<void> {
+  const { doc, deleteDoc } = await import("firebase/firestore");
+  const ref = doc(db, "messages", messageId);
+  try {
+    await deleteDoc(ref);
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    throw error;
+  }
+}

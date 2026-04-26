@@ -3,23 +3,36 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { loginUser, logoutUser, loginWithGoogle, resendVerificationEmail } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Package, LogOut, User, Heart, Mail, RefreshCw, CheckCircle2 } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
+import { Suspense } from "react";
 
-export default function AccountPage() {
-  const { user, loading } = useAuth();
+function AccountContent() {
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams?.get("redirect");
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendSuccess, setResendSuccess] = useState(false);
+
+  useEffect(() => {
+    if (user && !loading && redirectPath) {
+      if (redirectPath === "/admin" && !isAdmin) {
+        // Do not redirect to admin if they are not an admin
+        return;
+      }
+      router.push(redirectPath);
+    }
+  }, [user, loading, redirectPath, isAdmin, router]);
 
   if (loading) return null;
 
@@ -29,6 +42,7 @@ export default function AccountPage() {
     setError(null);
     try {
       await loginUser(email, password);
+      // The useEffect will handle the redirect once user state updates
     } catch (err: unknown) {
       console.error(err);
       setError("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
@@ -262,5 +276,13 @@ export default function AccountPage() {
         </div>
       </div>
     </Container>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center"><div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>}>
+      <AccountContent />
+    </Suspense>
   );
 }

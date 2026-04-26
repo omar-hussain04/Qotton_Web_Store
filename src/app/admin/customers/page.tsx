@@ -17,10 +17,42 @@ interface CustomerCRM {
   hasAccount: boolean;
 }
 
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<CustomerCRM[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteModalState, setDeleteModalState] = useState<{isOpen: boolean, phone: string | null, name: string | null}>({ isOpen: false, phone: null, name: null });
+
+  const confirmDelete = async () => {
+    const { phone, name } = deleteModalState;
+    if (!phone) return;
+
+    try {
+      const { deleteCustomerOrders } = await import("@/lib/orders");
+      const { logActivity } = await import("@/lib/logger");
+      const { auth } = await import("@/lib/firebase");
+      await deleteCustomerOrders(phone);
+      
+      if (auth.currentUser) {
+        await logActivity(
+          auth.currentUser.uid,
+          auth.currentUser.displayName || "مدير",
+          auth.currentUser.email || "",
+          "DELETE",
+          `تم حذف العميل ${name} (${phone}) وجميع طلباته`
+        );
+      }
+      
+      setCustomers(prev => prev.filter(c => c.phone !== phone));
+    } catch (error) {
+      console.error(error);
+      alert("حدث خطأ أثناء حذف العميل");
+    } finally {
+      setDeleteModalState({ isOpen: false, phone: null, name: null });
+    }
+  };
 
   useEffect(() => {
     async function loadCustomers() {
@@ -151,6 +183,7 @@ export default function AdminCustomersPage() {
                   <th className="px-6 py-4 font-medium text-center">أخر طلب</th>
                   <th className="px-6 py-4 font-medium text-center">عدد الطلبات</th>
                   <th className="px-6 py-4 font-medium text-center">المبالغ المدفوعة</th>
+                  <th className="px-6 py-4 font-medium text-center">إجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -202,11 +235,22 @@ export default function AdminCustomersPage() {
                     <td className="px-6 py-4 text-center font-numbers text-accent font-bold">
                       {customer.totalSpent.toFixed(2)} د.أ
                     </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteModalState({ isOpen: true, phone: customer.phone, name: `${customer.firstName} ${customer.lastName}` });
+                        }}
+                        className="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-colors rounded-lg font-bold text-xs"
+                      >
+                        حذف العميل
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {filteredCustomers.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-16 text-center text-muted">
+                    <td colSpan={6} className="px-6 py-16 text-center text-muted">
                       <User className="w-12 h-12 mx-auto mb-3 opacity-20" />
                       لا يوجد نتائج لعملاء مطابقين للترشيح
                     </td>
@@ -217,6 +261,15 @@ export default function AdminCustomersPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModalState.isOpen}
+        title="حذف العميل نهائياً"
+        message={`هل أنت متأكد من حذف العميل ${deleteModalState.name} وجميع طلباته المرتبطة؟ لا يمكن التراجع عن هذا الإجراء وسيتم مسح كل سجلاته.`}
+        confirmText="حذف العميل"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteModalState({ isOpen: false, phone: null, name: null })}
+      />
     </div>
   );
 }

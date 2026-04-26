@@ -10,6 +10,9 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase";
 
+import { logActivity } from "./logger";
+import { getUserProfile } from "./users";
+
 // Register a new user + send verification email
 export async function registerUser(email: string, password: string, displayName: string): Promise<User> {
   try {
@@ -35,7 +38,18 @@ export async function registerUser(email: string, password: string, displayName:
 export async function loginUser(email: string, password: string): Promise<User> {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    const user = userCredential.user;
+    const profile = await getUserProfile(user.uid);
+    if (profile?.role === 'admin' || email === 'oh9500585@gmail.com') {
+      await logActivity(
+        user.uid,
+        user.displayName || profile?.firstName || "مدير",
+        user.email || email,
+        "LOGIN",
+        "تسجيل دخول مشرف للنظام"
+      );
+    }
+    return user;
   } catch (error) {
     console.error("Error logging in:", error);
     throw error;
@@ -45,6 +59,19 @@ export async function loginUser(email: string, password: string): Promise<User> 
 // Logout user
 export async function logoutUser(): Promise<void> {
   try {
+    const user = auth.currentUser;
+    if (user) {
+      const profile = await getUserProfile(user.uid);
+      if (profile?.role === 'admin' || user.email === 'oh9500585@gmail.com') {
+        await logActivity(
+          user.uid,
+          user.displayName || profile?.firstName || "مدير",
+          user.email || "",
+          "LOGOUT",
+          "تسجيل خروج المشرف من النظام"
+        );
+      }
+    }
     await signOut(auth);
   } catch (error) {
     console.error("Error logging out:", error);
@@ -57,7 +84,18 @@ export async function loginWithGoogle(): Promise<User> {
   try {
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
-    return userCredential.user;
+    const user = userCredential.user;
+    const profile = await getUserProfile(user.uid);
+    if (profile?.role === 'admin' || user.email === 'oh9500585@gmail.com') {
+      await logActivity(
+        user.uid,
+        user.displayName || profile?.firstName || "مدير",
+        user.email || "",
+        "LOGIN",
+        "تسجيل دخول مشرف للنظام (بواسطة Google)"
+      );
+    }
+    return user;
   } catch (error) {
     console.error("Error logging in with Google:", error);
     throw error;

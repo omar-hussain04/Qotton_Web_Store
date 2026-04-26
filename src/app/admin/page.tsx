@@ -6,6 +6,7 @@ import { getProducts } from "@/lib/products";
 import { getMessages } from "@/lib/messages";
 import type { Order, Product, ContactMessage } from "@/types";
 import { Package, ShoppingBag, Tags, MessageSquare, DollarSign } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminDashboardPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -147,6 +148,11 @@ export default function AdminDashboardPage() {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="p-4 border-t border-border flex justify-center bg-background/30">
+          <Link href="/admin/orders" className="text-sm font-bold text-accent hover:text-accent-light hover:underline transition-colors">
+            عرض كل الطلبات →
+          </Link>
         </div>
       </div>
     </div>

@@ -25,10 +25,11 @@ export function Footer() {
           <div>
             <h3 className="font-heading text-xl text-text font-semibold mb-4">روابط سريعة</h3>
             <ul className="space-y-3">
+              <li><Link href="/" className="text-muted hover:text-accent transition-colors">الرئيسية</Link></li>
               <li><Link href="/products" className="text-muted hover:text-accent transition-colors">المنتجات</Link></li>
               <li><Link href="/about" className="text-muted hover:text-accent transition-colors">عن قطن</Link></li>
-              <li><Link href="/contact" className="text-muted hover:text-accent transition-colors">تواصل معنا</Link></li>
               <li><Link href="/faq" className="text-muted hover:text-accent transition-colors">الأسئلة الشائعة</Link></li>
+              <li><Link href="/contact" className="text-muted hover:text-accent transition-colors">تواصل معنا</Link></li>
             </ul>
           </div>
           

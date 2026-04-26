@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, getDocs, Timestamp, query, where } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs, Timestamp, query, where, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Order, OrderInput } from "@/types";
 
@@ -98,5 +98,30 @@ export async function getOrderById(orderId: string): Promise<Order | null> {
   } catch (error) {
     console.error("Error fetching order by ID:", error);
     return null;
+  }
+}
+
+/** Delete an order (Admin only) */
+export async function deleteOrder(orderId: string): Promise<void> {
+  try {
+    const orderRef = doc(db, "orders", orderId);
+    await deleteDoc(orderRef);
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    throw error;
+  }
+}
+
+/** Delete all orders associated with a customer phone (Admin only) */
+export async function deleteCustomerOrders(phone: string): Promise<void> {
+  try {
+    const q = query(ordersCollection, where("customer.phone", "==", phone));
+    const snapshot = await getDocs(q);
+    
+    const deletePromises = snapshot.docs.map(docSnap => deleteDoc(doc(db, "orders", docSnap.id)));
+    await Promise.all(deletePromises);
+  } catch (error) {
+    console.error("Error deleting customer orders:", error);
+    throw error;
   }
 }

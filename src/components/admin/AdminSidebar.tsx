@@ -13,7 +13,9 @@ import {
   Menu, 
   X,
   Archive,
-  Users
+  Users,
+  Shield,
+  Activity
 } from "lucide-react";
 
 const ADMIN_LINKS = [
@@ -23,6 +25,8 @@ const ADMIN_LINKS = [
   { href: "/admin/inventory", label: "المخزون", icon: Archive },
   { href: "/admin/customers", label: "العملاء", icon: Users },
   { href: "/admin/messages", label: "الرسائل", icon: MessageSquare },
+  { href: "/admin/admins", label: "الصلاحيات", icon: Shield },
+  { href: "/admin/logs", label: "سجل النشاطات", icon: Activity },
 ];
 
 export function AdminSidebar() {

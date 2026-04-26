@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, Timestamp, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 import type { UserProfile, CartItem } from "@/types";
 
@@ -46,6 +46,45 @@ export async function updateUserCart(userId: string, cart: CartItem[]): Promise<
     await setDoc(docRef, { cart, updatedAt: Timestamp.now() }, { merge: true });
   } catch (error) {
     console.error("Error updating cart:", error);
+    throw error;
+  }
+}
+
+/** Get user by email */
+export async function getUserByEmail(email: string): Promise<{ id: string, profile: UserProfile } | null> {
+  try {
+    const q = query(collection(db, "users"), where("email", "==", email));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      const doc = snapshot.docs[0];
+      return { id: doc.id, profile: doc.data() as UserProfile };
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching user by email:", error);
+    return null;
+  }
+}
+
+/** Get all admins */
+export async function getAdmins(): Promise<{ id: string, profile: UserProfile }[]> {
+  try {
+    const q = query(collection(db, "users"), where("role", "==", "admin"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, profile: doc.data() as UserProfile }));
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    return [];
+  }
+}
+
+/** Change a user's role */
+export async function changeUserRole(userId: string, role: 'admin' | 'user'): Promise<void> {
+  try {
+    const docRef = doc(db, "users", userId);
+    await setDoc(docRef, { role, updatedAt: Timestamp.now() }, { merge: true });
+  } catch (error) {
+    console.error("Error changing user role:", error);
     throw error;
   }
 }

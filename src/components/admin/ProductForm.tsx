@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Product, ColorOption } from "@/types";
-import { Plus, Trash2, Save, ArrowRight, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Plus, Trash2, Save, ArrowRight, Upload, Image as ImageIcon, Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface ProductFormProps {
@@ -22,13 +22,72 @@ const DEFAULT_PRODUCT: Omit<Product, "id"> = {
   colors: [],
   sizes: ["S", "M", "L", "XL"],
   description: "",
-  category: "men",
+  category: "tshirt",
   tags: [],
   rating: 5,
   reviewsCount: 0,
   isNew: true,
   inStock: true,
 };
+
+const CATEGORIES = [
+  { value: 'tshirt', label: 'تيشرت' },
+  { value: 'hoodie', label: 'هودي' },
+  { value: 'cap', label: 'كاب' },
+  { value: 'totebag', label: 'توت باج' },
+  { value: 'wallet', label: 'محفظة صغيرة' },
+];
+
+function CategoryDropdown({ currentCategory, onChange }: { currentCategory: string, onChange: (c: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const currentLabel = CATEGORIES.find(c => c.value === currentCategory)?.label || "اختر التصنيف";
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-2 bg-background border border-border rounded-lg text-text focus:border-accent transition-colors text-right"
+      >
+        <span>{currentLabel}</span>
+        <ChevronDown className={`w-4 h-4 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg shadow-xl bg-surface border border-border overflow-hidden right-0">
+          <div className="py-1">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.value}
+                type="button"
+                onClick={() => {
+                  onChange(cat.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-right px-4 py-2 text-sm font-bold transition-colors hover:bg-background flex items-center justify-between ${cat.value === currentCategory ? "text-accent bg-background" : "text-text"}`}
+              >
+                {cat.label}
+                {cat.value === currentCategory && <div className="w-1.5 h-1.5 rounded-full bg-accent"></div>}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormProps) {
   const router = useRouter();
@@ -162,12 +221,10 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted">التصنيف</label>
-                <select name="category" value={formData.category} onChange={handleChange} className="w-full p-2 bg-background border border-border rounded-lg text-text focus:border-accent">
-                  <option value="men">رجالي</option>
-                  <option value="women">نسائي</option>
-                  <option value="kids">أطفال</option>
-                  <option value="unisex">للجنسين</option>
-                </select>
+                <CategoryDropdown 
+                  currentCategory={formData.category} 
+                  onChange={(val) => setFormData(prev => ({ ...prev, category: val }))} 
+                />
               </div>
             </div>
 

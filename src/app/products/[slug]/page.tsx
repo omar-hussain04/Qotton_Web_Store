@@ -205,7 +205,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   </button>
                   <span className="font-numbers w-8 text-center text-lg font-bold">{quantity}</span>
                   <button 
-                    onClick={() => setQuantity(Math.min((selectedColor?.stock || 1) - quantity > 0 ? quantity + 1 : quantity, quantity))}
+                    onClick={() => setQuantity(Math.min(quantity + 1, selectedColor?.stock || 1))}
                     className="w-12 h-full flex items-center justify-center text-text hover:text-accent disabled:opacity-50"
                     disabled={quantity >= (selectedColor?.stock || 1)}
                   >
@@ -239,13 +239,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               <div>
                 <div className="font-medium text-text text-sm mb-0.5">جودة مضمونة</div>
                 <div className="text-xs text-muted">استبدال خلال ١٤ يوم</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 rounded-sm bg-surface border border-border/50">
-              <RefreshCw className="text-accent h-6 w-6" />
-              <div>
-                <div className="font-medium text-text text-sm mb-0.5">إرجاع سهل</div>
-                <div className="text-xs text-muted">سياسة إرجاع مرنة</div>
               </div>
             </div>
           </div>
