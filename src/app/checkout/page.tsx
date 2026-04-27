@@ -9,7 +9,7 @@ import Link from "next/link";
 import { ChevronRight, Banknote, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CURRENCY, FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from "@/lib/constants";
-import { LocationPicker } from "@/components/ui/LocationPicker";
+import { LocationPicker, type ResolvedAddress } from "@/components/ui/LocationPicker";
 
 export default function CheckoutPage() {
   const [mounted, setMounted] = useState(false);
@@ -17,13 +17,19 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const router = useRouter();
 
+  // Auto-fill city & address from map location
+  const handleAddressResolved = (resolved: ResolvedAddress) => {
+    if (resolved.city) setCity(resolved.city);
+    if (resolved.address) setAddress(resolved.address);
+  };
+
   // Profile auto-fill state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
-  const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
   const cityDropdownRef = useRef<HTMLDivElement>(null);
@@ -72,12 +78,13 @@ export default function CheckoutPage() {
   const netProfit = total - totalCost;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handlePlaceOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const customerData = {
         firstName,
@@ -110,7 +117,7 @@ export default function CheckoutPage() {
 
       const { createOrder, saveUserProfile } = await import("@/lib/db");
       const orderId = await createOrder(orderData, user?.uid);
-      
+
       // Save address to user profile for future auto-fill
       if (user) {
         await saveUserProfile(user.uid, {
@@ -124,7 +131,7 @@ export default function CheckoutPage() {
       }
 
       clearCart();
-      setIsSubmitting(false);
+      setIsSuccess(true);
       router.push(`/order-success?orderId=${orderId}`);
     } catch (err) {
       console.error("Order submission failed:", err);
@@ -134,6 +141,24 @@ export default function CheckoutPage() {
   };
 
   if (!mounted) return null;
+
+  // Show a full-page loading screen while submitting or navigating to success
+  if (isSubmitting || isSuccess) {
+    return (
+      <Container className="py-32 flex flex-col items-center justify-center min-h-[60vh] animate-fade-in">
+        <div className="relative w-20 h-20 mb-8">
+          <div className="absolute inset-0 rounded-full border-4 border-surface border-t-accent animate-spin"></div>
+          <div className="absolute inset-2 rounded-full border-4 border-surface border-b-accent/50 animate-spin animation-delay-200" style={{ animationDirection: 'reverse' }}></div>
+        </div>
+        <h1 className="font-heading text-3xl font-bold text-text mb-3">
+          {isSuccess ? "تم استلام الطلب!" : "جاري معالجة طلبك..."}
+        </h1>
+        <p className="text-muted">
+          {isSuccess ? "جاري تحويلك لصفحة التأكيد..." : "يرجى الانتظار وعدم إغلاق الصفحة."}
+        </p>
+      </Container>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -152,11 +177,11 @@ export default function CheckoutPage() {
       <Link href="/products" className="inline-flex items-center gap-2 text-sm text-muted hover:text-accent mb-8 transition-colors">
         <ChevronRight className="h-4 w-4" /> العودة للتسوق
       </Link>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2">
           <h1 className="font-heading text-3xl font-bold text-text mb-8">إتمام الطلب</h1>
-          
+
           <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-8">
             {/* Shipping Info */}
             <section className="bg-surface p-6 rounded-lg border border-border/50">
@@ -172,7 +197,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-sm font-medium text-text">رقم الجوال</label>
-                  <input name="phone" required type="tel" dir="ltr" placeholder="+962 7X XXX XXXX" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-background border border-border rounded-sm h-12 px-4 text-text focus:outline-none focus:ring-2 focus:ring-accent text-right" />
+                  <input name="phone" required type="tel" dir="ltr" placeholder="07xxxxxxxxx" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-background border border-border rounded-sm h-12 px-4 text-text focus:outline-none focus:ring-2 focus:ring-accent text-right" />
                 </div>
               </div>
             </section>
@@ -218,7 +243,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="space-y-2 md:col-span-2 mt-4">
                   <label className="text-sm font-medium text-text mb-2 block">تحديد الموقع على الخريطة (اختياري)</label>
-                  <LocationPicker onLocationSelect={setLocation} defaultLocation={location} />
+                  <LocationPicker onLocationSelect={setLocation} onAddressResolved={handleAddressResolved} defaultLocation={location} />
                 </div>
               </div>
             </section>
@@ -241,7 +266,7 @@ export default function CheckoutPage() {
         <div className="lg:col-span-1">
           <div className="bg-surface p-6 rounded-lg border border-border/50 sticky top-24">
             <h2 className="font-heading text-xl text-text mb-6 font-bold">ملخص الطلب</h2>
-            
+
             <div className="space-y-4 mb-6">
               {items.map((item) => (
                 <div key={item.id} className="flex flex-col text-sm">

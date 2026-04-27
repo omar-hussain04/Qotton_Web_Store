@@ -4,11 +4,13 @@ import { CartItem, Product } from "@/types";
 
 interface CartState {
   items: CartItem[];
+  cartOwner: string | null;
   addItem: (product: Product, quantity: number, color: string, size: string) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   setItems: (items: CartItem[]) => void;
+  setCartOwner: (uid: string | null) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }
@@ -17,8 +19,10 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      cartOwner: null,
       isOpen: false,
       setIsOpen: (isOpen) => set({ isOpen }),
+      setCartOwner: (uid) => set({ cartOwner: uid }),
       addItem: (product, quantity, color, size) => {
         const id = `${product.id}-${color}-${size}`;
         const currentItems = get().items;
@@ -61,12 +65,12 @@ export const useCartStore = create<CartState>()(
           ),
         });
       },
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], cartOwner: null }),
       setItems: (items) => set({ items }),
     }),
     {
       name: "qotton-cart-storage",
-      partialize: (state) => ({ items: state.items }),
+      partialize: (state) => ({ items: state.items, cartOwner: state.cartOwner }),
     }
   )
 );

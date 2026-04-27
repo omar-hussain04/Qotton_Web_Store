@@ -12,7 +12,7 @@ import { CartItem } from "@/types";
  */
 export function CartSync() {
   const { user, loading } = useAuth();
-  const { items, setItems, clearCart } = useCartStore();
+  const { items, setItems, clearCart, cartOwner, setCartOwner } = useCartStore();
   const lastSyncUid = useRef<string | null>(null);
   const isInitialLoad = useRef(true);
 
@@ -23,38 +23,48 @@ export function CartSync() {
     async function syncOnAuthStateChange() {
       if (user) {
         // Logged In: 
-        // If we just logged in (uid changed from null/other to current user)
+        // If we just logged in or page refreshed
         if (lastSyncUid.current !== user.uid) {
           const profile = await getUserProfile(user.uid);
           const cloudItems = profile?.cart || [];
           
-          if (items.length === 0) {
-            // If local cart is empty, just take the cloud cart
-            setItems(cloudItems);
+          if (cartOwner === user.uid) {
+            // This is a page refresh! The local cart already belongs to this user.
+            // We do NOT merge (which would double quantities). We just load the cloud cart as truth.
+            // Only update local state if cloud actually has data, otherwise keep local (to be safe).
+            if (cloudItems.length > 0 || items.length === 0) {
+              setItems(cloudItems);
+            }
           } else {
-            // Merge local guest cart with cloud cart
-            const mergedMap = new Map<string, CartItem>();
-            
-            // Add cloud items first
-            cloudItems.forEach(item => mergedMap.set(item.id, { ...item }));
-            
-            // Merge local items
-            items.forEach(localItem => {
-              const existing = mergedMap.get(localItem.id);
-              if (existing) {
-                // If exists, sum the quantities
-                existing.quantity += localItem.quantity;
-              } else {
-                // If new, add it
-                mergedMap.set(localItem.id, { ...localItem });
-              }
-            });
+            // This is a new login! The local cart belongs to a guest or someone else.
+            if (items.length === 0) {
+              // If local guest cart is empty, just take the cloud cart
+              setItems(cloudItems);
+            } else {
+              // Merge local guest cart with cloud cart
+              const mergedMap = new Map<string, CartItem>();
+              
+              // Add cloud items first
+              cloudItems.forEach(item => mergedMap.set(item.id, { ...item }));
+              
+              // Merge local items
+              items.forEach(localItem => {
+                const existing = mergedMap.get(localItem.id);
+                if (existing) {
+                  existing.quantity += localItem.quantity;
+                } else {
+                  mergedMap.set(localItem.id, { ...localItem });
+                }
+              });
 
-            const mergedItems = Array.from(mergedMap.values());
-            setItems(mergedItems);
-            
-            // Save the merged result back to cloud
-            await updateUserCart(user.uid, mergedItems);
+              const mergedItems = Array.from(mergedMap.values());
+              setItems(mergedItems);
+              
+              // Save the merged result back to cloud
+              await updateUserCart(user.uid, mergedItems);
+            }
+            // Mark the cart as owned by this user so we don't merge again on refresh
+            setCartOwner(user.uid);
           }
           lastSyncUid.current = user.uid;
         }
@@ -62,7 +72,7 @@ export function CartSync() {
         // Logged Out:
         // Clear the cart on logout to prevent account data leakage
         if (lastSyncUid.current !== null) {
-          clearCart();
+          clearCart(); // this also sets cartOwner to null
           lastSyncUid.current = null;
         }
       }
