@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Container } from "@/components/ui/Container";
@@ -25,9 +25,21 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+        setCityDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Load saved profile when user is logged in
@@ -171,21 +183,34 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-sm font-medium text-text">المدينة</label>
-                  <select name="city" required value={city} onChange={(e) => setCity(e.target.value)} className="w-full bg-background border border-border rounded-sm h-12 px-4 text-text focus:outline-none focus:ring-2 focus:ring-accent appearance-none">
-                    <option value="" className="text-[#4A3219]">اختر المحافظة...</option>
-                    <option value="عمان" className="text-[#4A3219]">عمان</option>
-                    <option value="إربد" className="text-[#4A3219]">إربد</option>
-                    <option value="الزرقاء" className="text-[#4A3219]">الزرقاء</option>
-                    <option value="العقبة" className="text-[#4A3219]">العقبة</option>
-                    <option value="البلقاء" className="text-[#4A3219]">البلقاء</option>
-                    <option value="الكرك" className="text-[#4A3219]">الكرك</option>
-                    <option value="المفرق" className="text-[#4A3219]">المفرق</option>
-                    <option value="مأدبا" className="text-[#4A3219]">مأدبا</option>
-                    <option value="عجلون" className="text-[#4A3219]">عجلون</option>
-                    <option value="جرش" className="text-[#4A3219]">جرش</option>
-                    <option value="معان" className="text-[#4A3219]">معان</option>
-                    <option value="الطفيلة" className="text-[#4A3219]">الطفيلة</option>
-                  </select>
+                  <div className="relative" ref={cityDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
+                      className={`w-full flex items-center justify-between bg-background border border-border rounded-sm h-12 px-4 text-right focus:outline-none focus:ring-2 focus:ring-accent transition-colors ${city ? 'text-text' : 'text-muted'}`}
+                    >
+                      <span>{city || "اختر المحافظة..."}</span>
+                      <svg className={`w-4 h-4 text-muted transition-transform ${cityDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    {cityDropdownOpen && (
+                      <div className="absolute z-50 mt-1 w-full bg-surface border border-border rounded-lg shadow-xl overflow-hidden">
+                        <div className="max-h-60 overflow-y-auto py-1">
+                          {["عمان", "إربد", "الزرقاء", "العقبة", "البلقاء", "الكرك", "المفرق", "مأدبا", "عجلون", "جرش", "معان", "الطفيلة"].map((c) => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => { setCity(c); setCityDropdownOpen(false); }}
+                              className={`w-full text-right px-4 py-2.5 text-sm font-bold transition-colors flex items-center justify-between ${city === c ? 'bg-accent/10 text-accent' : 'text-text hover:bg-background'}`}
+                            >
+                              {c}
+                              {city === c && <div className="w-1.5 h-1.5 rounded-full bg-accent"></div>}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <input type="hidden" name="city" value={city} required />
+                  </div>
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-sm font-medium text-text">العنوان التفصيلي (الحي، الشارع)</label>
