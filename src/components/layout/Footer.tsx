@@ -15,7 +15,7 @@ export function Footer() {
         <div className="py-12 md:py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <Link href="/" className="inline-block mb-4">
-              <Image src="/qottonlogo2.png" alt="قطن" width={100} height={40} className="h-10 w-auto object-contain" />
+              <Image src="/qotton_logo.png" alt="قطن" width={100} height={40} className="h-10 w-auto object-contain" />
             </Link>
             <p className="text-muted text-lg max-w-sm mb-6">
               خيطٌ يَنسجُ لأثرٍ يَبقى. هوديات مصنوعة بعناية لتُرافقك في كل لحظة، تجمع بين الأصالة والفخامة.

@@ -344,7 +344,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted">المقاسات المتوفرة</label>
               <div className="flex flex-wrap gap-2">
-                {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map(size => (
+                {["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"].map(size => (
                   <button
                     key={size}
                     type="button"
@@ -359,26 +359,58 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
               </div>
             </div>
 
-            <div className="pt-4 border-t border-border space-y-3">
+            <div className="pt-4 border-t border-border space-y-4">
               <label className="text-sm font-medium text-muted">الألوان المتوفرة</label>
-              <div className="flex gap-2">
-                <input type="text" placeholder="اسم اللون (أسود)" value={colorInput.name} onChange={e => setColorInput(p => ({...p, name: e.target.value}))} className="flex-1 p-2 bg-background border border-border rounded-lg text-text focus:border-accent text-sm" />
-                <input type="color" value={colorInput.hex} onChange={e => setColorInput(p => ({...p, hex: e.target.value}))} className="w-10 h-10 p-1 bg-background border border-border rounded-lg cursor-pointer" />
-                <Button type="button" onClick={handleAddColor} className="px-3"><Plus className="w-4 h-4" /></Button>
+              
+              <div className="p-3 bg-background border border-border rounded-xl space-y-3">
+                <div className="flex gap-2 items-center">
+                  <div className="shrink-0 flex flex-col gap-1 items-center">
+                    <span className="text-[10px] text-muted font-medium">الدرجة</span>
+                    <input 
+                      type="color" 
+                      value={colorInput.hex} 
+                      onChange={e => setColorInput(p => ({...p, hex: e.target.value}))} 
+                      className="w-10 h-10 rounded-lg cursor-pointer border-2 border-border/50 shadow-sm hover:border-accent transition-colors p-0 overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-moz-color-swatch]:border-none" 
+                      title="اختر درجة اللون"
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <span className="text-[10px] text-muted font-medium">اسم اللون (يظهر للعميل)</span>
+                    <input 
+                      type="text" 
+                      placeholder="مثال: كحلي، زيتي، بيج..." 
+                      value={colorInput.name} 
+                      onChange={e => setColorInput(p => ({...p, name: e.target.value}))} 
+                      className="w-full p-2.5 h-10 bg-surface border border-border rounded-lg text-text focus:border-accent text-sm shadow-sm" 
+                    />
+                  </div>
+                  <div className="shrink-0 flex flex-col gap-1">
+                    <span className="text-[10px] text-transparent select-none">.</span>
+                    <Button type="button" onClick={handleAddColor} className="h-10 px-4 gap-1.5 font-bold shadow-sm text-xs">
+                      <Plus className="w-4 h-4" />
+                      إضافة
+                    </Button>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-2 mt-2">
+              <div className="space-y-2 mt-4">
                 {formData.colors.map((color, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-2 bg-background border border-border rounded-lg text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: color.hex }}></div>
-                      <span>{color.name}</span>
+                  <div key={idx} className="flex items-center justify-between p-3 bg-surface border border-border rounded-lg text-sm shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-md border border-border/50 shadow-sm" style={{ backgroundColor: color.hex }}></div>
+                      <span className="font-bold text-text">{color.name}</span>
                     </div>
-                    <button type="button" onClick={() => handleRemoveColor(idx)} className="text-red-500 hover:text-red-600 transition-colors">
+                    <button type="button" onClick={() => handleRemoveColor(idx)} className="text-red-500 hover:text-red-600 transition-colors p-1.5 hover:bg-red-500/10 rounded-md">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
+                {formData.colors.length === 0 && (
+                  <div className="text-center py-4 text-xs text-muted border-2 border-dashed border-border rounded-lg">
+                    لم تقم بإضافة أي لون حتى الآن.
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -13,10 +13,12 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteModalState, setDeleteModalState] = useState<{isOpen: boolean, id: string | null, name: string | null}>({ isOpen: false, id: null, name: null });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const confirmDelete = async () => {
     const { id, name } = deleteModalState;
     if (!id) return;
+    setIsDeleting(true);
     try {
       await deleteProduct(id);
       setProducts(products.filter(p => p.id !== id));
@@ -24,6 +26,7 @@ export default function AdminProductsPage() {
       console.error(err);
       alert("حدث خطأ أثناء الحذف");
     } finally {
+      setIsDeleting(false);
       setDeleteModalState({ isOpen: false, id: null, name: null });
     }
   };
@@ -170,6 +173,7 @@ export default function AdminProductsPage() {
         confirmText="حذف المنتج"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModalState({ isOpen: false, id: null, name: null })}
+        isLoading={isDeleting}
       />
     </div>
   );

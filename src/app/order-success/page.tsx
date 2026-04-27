@@ -28,7 +28,7 @@ function SuccessContent() {
         </p>
         
         <div className="bg-background border border-border rounded-lg p-6 w-full max-w-sm mb-10">
-          <div className="text-sm text-muted mb-2">رقم الطلب (معرف فايربيس)</div>
+          <div className="text-sm text-muted mb-2">رقم الطلب</div>
           <div className="font-numbers text-xl font-bold text-accent break-all">{orderNumber}</div>
         </div>
 

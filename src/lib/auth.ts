@@ -39,8 +39,9 @@ export async function loginUser(email: string, password: string): Promise<User> 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    const profile = await getUserProfile(user.uid);
-    if (profile?.role === 'admin' || email === 'oh9500585@gmail.com') {
+    const tokenResult = await user.getIdTokenResult();
+    if (tokenResult.claims.admin === true) {
+      const profile = await getUserProfile(user.uid);
       await logActivity(
         user.uid,
         user.displayName || profile?.firstName || "مدير",
@@ -61,8 +62,9 @@ export async function logoutUser(): Promise<void> {
   try {
     const user = auth.currentUser;
     if (user) {
-      const profile = await getUserProfile(user.uid);
-      if (profile?.role === 'admin' || user.email === 'oh9500585@gmail.com') {
+      const tokenResult = await user.getIdTokenResult();
+      if (tokenResult.claims.admin === true) {
+        const profile = await getUserProfile(user.uid);
         await logActivity(
           user.uid,
           user.displayName || profile?.firstName || "مدير",
@@ -85,8 +87,9 @@ export async function loginWithGoogle(): Promise<User> {
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
     const user = userCredential.user;
-    const profile = await getUserProfile(user.uid);
-    if (profile?.role === 'admin' || user.email === 'oh9500585@gmail.com') {
+    const tokenResult = await user.getIdTokenResult();
+    if (tokenResult.claims.admin === true) {
+      const profile = await getUserProfile(user.uid);
       await logActivity(
         user.uid,
         user.displayName || profile?.firstName || "مدير",

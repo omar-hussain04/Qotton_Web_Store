@@ -98,12 +98,17 @@ export default function AdminDashboardPage() {
       {/* Orders Preview Table */}
       <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden mt-8">
         <div className="px-6 py-4 border-b border-border flex justify-between items-center">
-          <h2 className="text-lg font-bold font-heading">أحدث الطلبات</h2>
-          {pendingOrders > 0 && (
-            <span className="bg-orange-500/10 text-orange-400 text-xs px-2 py-1 rounded-full font-medium">
-              {pendingOrders} طلبات قيد الانتظار
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold font-heading">أحدث الطلبات</h2>
+            {pendingOrders > 0 && (
+              <span className="bg-orange-500/10 text-orange-400 text-xs px-2 py-1 rounded-full font-medium">
+                {pendingOrders} قيد الانتظار
+              </span>
+            )}
+          </div>
+          <Link href="/admin/orders" className="text-sm font-bold text-accent hover:text-accent-light transition-colors flex items-center gap-1 bg-accent/10 hover:bg-accent/20 px-3 py-1.5 rounded-lg">
+            عرض كل الطلبات
+          </Link>
         </div>
         <div className="overflow-x-auto text-right">
           <table className="w-full text-sm">
@@ -148,11 +153,6 @@ export default function AdminDashboardPage() {
               )}
             </tbody>
           </table>
-        </div>
-        <div className="p-4 border-t border-border flex justify-center bg-background/30">
-          <Link href="/admin/orders" className="text-sm font-bold text-accent hover:text-accent-light hover:underline transition-colors">
-            عرض كل الطلبات →
-          </Link>
         </div>
       </div>
     </div>

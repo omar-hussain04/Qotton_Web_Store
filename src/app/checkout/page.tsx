@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ChevronRight, Banknote, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CURRENCY, FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from "@/lib/constants";
+import { LocationPicker } from "@/components/ui/LocationPicker";
 
 export default function CheckoutPage() {
   const [mounted, setMounted] = useState(false);
@@ -22,6 +23,7 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
+  const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
   useEffect(() => {
@@ -71,6 +73,7 @@ export default function CheckoutPage() {
         phone,
         city,
         address,
+        location,
       };
 
       const orderData = {
@@ -188,6 +191,10 @@ export default function CheckoutPage() {
                   <label className="text-sm font-medium text-text">العنوان التفصيلي (الحي، الشارع)</label>
                   <input name="address" required value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-background border border-border rounded-sm h-12 px-4 text-text focus:outline-none focus:ring-2 focus:ring-accent" />
                 </div>
+                <div className="space-y-2 md:col-span-2 mt-4">
+                  <label className="text-sm font-medium text-text mb-2 block">تحديد الموقع على الخريطة (اختياري)</label>
+                  <LocationPicker onLocationSelect={setLocation} defaultLocation={location} />
+                </div>
               </div>
             </section>
 
@@ -212,9 +219,12 @@ export default function CheckoutPage() {
             
             <div className="space-y-4 mb-6">
               {items.map((item) => (
-                <div key={item.id} className="flex justify-between text-sm">
-                  <span className="text-text line-clamp-1 flex-1 ml-2">{item.quantity}x {item.product.name}</span>
-                  <span className="font-numbers text-accent font-medium whitespace-nowrap">{item.product.price * item.quantity} د.أ</span>
+                <div key={item.id} className="flex flex-col text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-text line-clamp-1 flex-1 ml-2">{item.quantity}x {item.product.name}</span>
+                    <span className="font-numbers text-accent font-medium whitespace-nowrap">{item.product.price * item.quantity} د.أ</span>
+                  </div>
+                  <span className="text-xs text-muted mr-4 mt-1">اللون: {item.selectedColor} • المقاس: {item.selectedSize}</span>
                 </div>
               ))}
             </div>

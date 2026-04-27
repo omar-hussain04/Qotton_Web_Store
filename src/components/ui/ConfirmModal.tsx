@@ -13,6 +13,7 @@ interface ConfirmModalProps {
   confirmText?: string;
   cancelText?: string;
   isDestructive?: boolean;
+  isLoading?: boolean;
 }
 
 export function ConfirmModal({
@@ -24,6 +25,7 @@ export function ConfirmModal({
   confirmText = "تأكيد",
   cancelText = "إلغاء",
   isDestructive = true,
+  isLoading = false,
 }: ConfirmModalProps) {
   useEffect(() => {
     if (isOpen) {
@@ -44,7 +46,7 @@ export function ConfirmModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onCancel}
+            onClick={isLoading ? undefined : onCancel}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
           <motion.div
@@ -66,7 +68,8 @@ export function ConfirmModal({
                 </div>
                 <button
                   onClick={onCancel}
-                  className="p-1 text-muted hover:text-text hover:bg-background rounded-md transition-colors"
+                  disabled={isLoading}
+                  className="p-1 text-muted hover:text-text hover:bg-background rounded-md transition-colors disabled:opacity-50"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -76,14 +79,16 @@ export function ConfirmModal({
             <div className="bg-background px-6 py-4 flex items-center justify-end gap-3 border-t border-border">
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-bold text-text hover:bg-surface rounded-lg transition-colors border border-border"
+                disabled={isLoading}
+                className="px-4 py-2 text-sm font-bold text-text hover:bg-surface rounded-lg transition-colors border border-border disabled:opacity-50"
                 onClick={onCancel}
               >
                 {cancelText}
               </button>
               <button
                 type="button"
-                className={`px-4 py-2 text-sm font-bold text-white rounded-lg shadow-sm transition-colors ${
+                disabled={isLoading}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                   isDestructive
                     ? "bg-red-500 hover:bg-red-600"
                     : "bg-accent hover:bg-accent-light"
@@ -92,6 +97,9 @@ export function ConfirmModal({
                   onConfirm();
                 }}
               >
+                {isLoading && (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                )}
                 {confirmText}
               </button>
             </div>

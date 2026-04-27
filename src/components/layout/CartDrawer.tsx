@@ -90,7 +90,12 @@ export function CartDrawer() {
                   </div>
                   
                   <div className="text-xs text-muted mb-auto flex items-center gap-2 mt-1">
-                    <span>اللون: <span className="inline-block w-2.5 h-2.5 rounded-full outline outline-1 outline-border/50 translate-y-0.5 ml-1" style={{ backgroundColor: item.selectedColor }} /></span>
+                    <span className="flex items-center gap-1">اللون: 
+                      {item.product?.colors?.find(c => c.name === item.selectedColor)?.hex && (
+                        <span className="inline-block w-2.5 h-2.5 rounded-full outline outline-1 outline-border/50 translate-y-0.5" style={{ backgroundColor: item.product.colors.find(c => c.name === item.selectedColor)?.hex }} />
+                      )}
+                      <span>{item.selectedColor}</span>
+                    </span>
                     <span>•</span>
                     <span>المقاس: {item.selectedSize}</span>
                   </div>

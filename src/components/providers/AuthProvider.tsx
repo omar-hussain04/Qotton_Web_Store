@@ -27,11 +27,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (currentUser) {
         try {
+          // Check custom claims for admin status (set server-side, tamper-proof)
+          const tokenResult = await currentUser.getIdTokenResult();
+          setIsAdmin(tokenResult.claims.admin === true);
+
+          // Fetch profile for display data
           const userProfile = await getUserProfile(currentUser.uid);
           setProfile(userProfile);
-          setIsAdmin(userProfile?.role === "admin");
         } catch (error) {
-          console.error("Error fetching user profile in AuthProvider:", error);
+          console.error("Error in AuthProvider:", error);
           setProfile(null);
           setIsAdmin(false);
         }

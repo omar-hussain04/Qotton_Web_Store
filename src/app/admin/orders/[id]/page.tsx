@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getOrderById, updateOrderStatus } from "@/lib/orders";
 import type { Order, OrderStatus } from "@/types";
-import { ChevronRight, Printer, Package, MapPin, User, MessageSquare } from "lucide-react";
+import { ChevronRight, Printer, Package, MapPin, User, MessageSquare, Copy, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 
@@ -13,6 +14,13 @@ export default function AdminOrderDetailsPage() {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copiedToast, setCopiedToast] = useState(false);
+
+  const handleCopyLink = (link: string) => {
+    navigator.clipboard.writeText(link);
+    setCopiedToast(true);
+    setTimeout(() => setCopiedToast(false), 3000);
+  };
 
   useEffect(() => {
     async function fetchOrder() {
@@ -130,6 +138,47 @@ export default function AdminOrderDetailsPage() {
               <span className="text-muted block mb-1">العنوان بالتفصيل:</span> 
               <strong className="text-text">{order.customer?.address}</strong>
             </div>
+            {order.customer?.location && (() => {
+              const mapLink = `https://www.google.com/maps?q=${order.customer.location.lat},${order.customer.location.lng}`;
+              return (
+                <div className="sm:col-span-2 mt-4 p-4 bg-background border border-accent/20 rounded-lg space-y-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-5 h-5 text-accent" />
+                    <span className="font-bold text-base text-text">موقع العميل الدقيق (GPS)</span>
+                  </div>
+                  
+                  <a 
+                    href={mapLink}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-accent text-primary hover:brightness-110 transition-all rounded-md font-bold shadow-md"
+                  >
+                    فتح الموقع على خرائط جوجل
+                  </a>
+
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      readOnly 
+                      value={mapLink} 
+                      className="flex-1 bg-surface border border-border rounded-md px-3 py-2 text-sm text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                      dir="ltr"
+                    />
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyLink(mapLink);
+                      }}
+                      className="bg-accent/10 border border-accent/20 hover:bg-accent/20 text-accent px-4 py-2 rounded-md text-sm font-bold transition-colors whitespace-nowrap flex items-center gap-2"
+                      title="نسخ الرابط"
+                    >
+                      <Copy className="w-4 h-4" />
+                      نسخ الرابط
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
             {order.customer?.notes && (
               <div className="sm:col-span-2 bg-accent/5 max-w-full p-3 rounded border border-accent/20">
                 <span className="text-muted block mb-1">ملاحظات العميل:</span> 
@@ -188,6 +237,23 @@ export default function AdminOrderDetailsPage() {
           </table>
         </div>
       </div>
+
+      {/* Beautiful Toast Notification */}
+      <AnimatePresence>
+        {copiedToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-surface border border-accent/20 text-text px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-3 z-[100]"
+          >
+            <div className="w-6 h-6 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center shrink-0">
+              <Check className="w-4 h-4" />
+            </div>
+            <span className="font-bold text-sm">تم نسخ الرابط بنجاح!</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

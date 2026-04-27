@@ -4,13 +4,27 @@ import { productsCollection } from "@/lib/db";
 import { mockProducts } from "@/lib/data";
 
 export async function GET(req: Request) {
-  // Security Guard: Prevent accidental seeding in production or by unauthorized users
-  const isDev = process.env.NODE_ENV === 'development';
+  // Always require the SEED_SECRET header — no dev-mode bypass
   const seedSecret = process.env.SEED_SECRET;
-  const providedSecret = req.headers.get('x-seed-secret');
 
-  if (!isDev && (!seedSecret || providedSecret !== seedSecret)) {
-    return NextResponse.json({ error: "Unauthorized. Seed is disabled in production." }, { status: 401 });
+  if (!seedSecret) {
+    console.warn("⚠️ SEED_SECRET env var is not set — seed endpoint is disabled.");
+    return NextResponse.json(
+      { error: "Seed endpoint is disabled. Set SEED_SECRET to enable." },
+      { status: 503 }
+    );
+  }
+
+  const providedSecret = req.headers.get("x-seed-secret");
+  if (providedSecret !== seedSecret) {
+    return NextResponse.json(
+      { error: "Unauthorized. Invalid or missing x-seed-secret header." },
+      { status: 401 }
+    );
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    console.warn("⚠️ Seed endpoint called in PRODUCTION by authorized client.");
   }
 
   try {

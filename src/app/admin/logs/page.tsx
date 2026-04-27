@@ -9,6 +9,7 @@ export default function LogsPage() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -19,6 +20,7 @@ export default function LogsPage() {
 
   const handleClearLogs = async () => {
     try {
+      setIsDeleting(true);
       setLoading(true);
       await clearAllActivityLogs();
       await fetchLogs();
@@ -26,6 +28,7 @@ export default function LogsPage() {
       console.error(error);
       alert("حدث خطأ أثناء تفريغ السجل.");
     } finally {
+      setIsDeleting(false);
       setIsDeleteModalOpen(false);
     }
   };
@@ -161,6 +164,7 @@ export default function LogsPage() {
         confirmText="تفريغ السجل"
         onConfirm={handleClearLogs}
         onCancel={() => setIsDeleteModalOpen(false)}
+        isLoading={isDeleting}
       />
     </div>
   );

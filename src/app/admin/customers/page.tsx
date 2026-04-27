@@ -24,11 +24,13 @@ export default function AdminCustomersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteModalState, setDeleteModalState] = useState<{isOpen: boolean, phone: string | null, name: string | null}>({ isOpen: false, phone: null, name: null });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const confirmDelete = async () => {
     const { phone, name } = deleteModalState;
     if (!phone) return;
 
+    setIsDeleting(true);
     try {
       const { deleteCustomerOrders } = await import("@/lib/orders");
       const { logActivity } = await import("@/lib/logger");
@@ -50,6 +52,7 @@ export default function AdminCustomersPage() {
       console.error(error);
       alert("حدث خطأ أثناء حذف العميل");
     } finally {
+      setIsDeleting(false);
       setDeleteModalState({ isOpen: false, phone: null, name: null });
     }
   };
@@ -269,6 +272,7 @@ export default function AdminCustomersPage() {
         confirmText="حذف العميل"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModalState({ isOpen: false, phone: null, name: null })}
+        isLoading={isDeleting}
       />
     </div>
   );

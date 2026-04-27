@@ -77,6 +77,45 @@ export default function AdminInventoryPage() {
     }
   };
 
+  const handleSaveAllStock = async () => {
+    setSavingId('ALL');
+    try {
+      const updates = products.map(product => {
+        let hasChanges = false;
+        const updatedColors = product.colors.map(color => {
+          const newStock = stockEdits[product.id]?.[color.name] ?? color.stock;
+          if (newStock !== color.stock) {
+            hasChanges = true;
+          }
+          return { ...color, stock: newStock };
+        });
+
+        if (hasChanges) {
+          return updateProduct(product.id, { colors: updatedColors }).then(() => ({ id: product.id, colors: updatedColors }));
+        }
+        return null;
+      });
+
+      const results = await Promise.all(updates);
+      const successfulUpdates = results.filter(Boolean);
+
+      if (successfulUpdates.length > 0) {
+        setProducts(prev => prev.map(p => {
+          const update = successfulUpdates.find(u => u?.id === p.id);
+          return update ? { ...p, colors: update.colors } : p;
+        }));
+        alert(`تم حفظ جميع التعديلات بنجاح! تم تحديث ${successfulUpdates.length} منتجات.`);
+      } else {
+        alert("لا توجد تعديلات جديدة لحفظها.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("حدث خطأ أثناء حفظ التعديلات الشاملة.");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const filteredProducts = products.filter(product => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
@@ -93,15 +132,29 @@ export default function AdminInventoryPage() {
           <h1 className="text-3xl font-heading font-bold text-text mb-2">إدارة المخزون</h1>
           <p className="text-muted">تحديث كميات المنتجات المتوفرة لكل لون (Variant)</p>
         </div>
-        <div className="relative w-full md:w-64">
-          <input
-            type="text"
-            placeholder="بحث باسم المنتج..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-text focus:outline-none focus:border-accent"
-          />
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted" />
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="relative w-full md:w-64">
+            <input
+              type="text"
+              placeholder="بحث باسم المنتج..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-text focus:outline-none focus:border-accent"
+            />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted" />
+          </div>
+          <Button 
+            onClick={handleSaveAllStock} 
+            disabled={savingId === 'ALL'}
+            className="gap-2 shrink-0 h-10 px-6 font-bold"
+          >
+            {savingId === 'ALL' ? (
+              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            حفظ الكل
+          </Button>
         </div>
       </div>
 

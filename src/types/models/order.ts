@@ -19,6 +19,10 @@ export interface ShippingInfo {
   city: string;
   address: string;
   notes?: string;
+  location?: {
+    lat: number;
+    lng: number;
+  } | null;
 }
 
 // --- Order totals ---

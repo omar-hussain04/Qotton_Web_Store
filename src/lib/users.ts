@@ -78,13 +78,24 @@ export async function getAdmins(): Promise<{ id: string, profile: UserProfile }[
   }
 }
 
-/** Change a user's role */
+/** Change a user's role — calls server-side API (Custom Claims) */
 export async function changeUserRole(userId: string, role: 'admin' | 'user'): Promise<void> {
-  try {
-    const docRef = doc(db, "users", userId);
-    await setDoc(docRef, { role, updatedAt: Timestamp.now() }, { merge: true });
-  } catch (error) {
-    console.error("Error changing user role:", error);
-    throw error;
+  const { auth } = await import("./firebase");
+  const token = await auth.currentUser?.getIdToken();
+
+  if (!token) throw new Error("Not authenticated");
+
+  const response = await fetch("/api/admin/users/set-role", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ uid: userId, role }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || "Failed to change role");
   }
 }

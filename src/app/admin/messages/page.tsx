@@ -11,11 +11,13 @@ export default function AdminMessagesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteModalState, setDeleteModalState] = useState<{isOpen: boolean, messageId: string | null, messageName: string | null, messageEmail: string | null}>({ isOpen: false, messageId: null, messageName: null, messageEmail: null });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const confirmDelete = async () => {
     const { messageId, messageName, messageEmail } = deleteModalState;
     if (!messageId) return;
 
+    setIsDeleting(true);
     try {
       const { deleteMessage } = await import("@/lib/messages");
       const { logActivity } = await import("@/lib/logger");
@@ -37,6 +39,7 @@ export default function AdminMessagesPage() {
       console.error(error);
       alert("حدث خطأ أثناء حذف الرسالة");
     } finally {
+      setIsDeleting(false);
       setDeleteModalState({ isOpen: false, messageId: null, messageName: null, messageEmail: null });
     }
   };
@@ -173,6 +176,7 @@ export default function AdminMessagesPage() {
         confirmText="حذف نهائياً"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModalState({ isOpen: false, messageId: null, messageName: null, messageEmail: null })}
+        isLoading={isDeleting}
       />
     </div>
   );
